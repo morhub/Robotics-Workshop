@@ -7,8 +7,15 @@
 
 #ifndef PATHCALCULATOR_H_
 #define PATHCALCULATOR_H_
-#include <cstdio>
 
+#include <cstdio>
+#include <ompl/base/SpaceInformation.h>
+#include <ompl/base/spaces/SE3StateSpace.h>
+#include <ompl/geometric/planners/prm/PRM.h>
+#include <ompl/config.h>
+
+namespace ob = ompl::base;
+namespace og = ompl::geometric;
 
 class PathCalculator
 {
@@ -21,6 +28,8 @@ private:
 	int velocity;
 public:
 	PathCalculator (int rows, int cols, float** map, int* coordinates, int radius, int velocity);
+	void PlanRoute();
+
 };
 
 

@@ -36,7 +36,7 @@ int main(int argc, char **argv)
     // Check the number of parameters
     if (argc < MAIN_NUM_OF_ARGS) {
         // Tell the user how to run the program
-    	char* arg_string = "tif_file man_coordinates_x man_coordinates_y initial_radius helicopter_velocity";
+    	string arg_string = "tif_file man_coordinates_x man_coordinates_y initial_radius helicopter_velocity";
         std::cerr << "Usage: " << argv[0] << arg_string << std::endl;
         return RETURN_CODE_ERROR;
     }
@@ -45,10 +45,10 @@ int main(int argc, char **argv)
     // Open the TIFF file using libtiff
 //    tif = TIFFOpen(argv[0].c_str(), "r");
     coordinates = new int[2];
-    coordinates[0] = argv[1];
-    coordinates[1] = argv[2];
-    radius = argv[3];
-    velocity = argv[4];
+    coordinates[0] = atoi(argv[1]);
+    coordinates[1] = atoi(argv[2]);
+    radius = atoi(argv[3]);
+    velocity = atoi(argv[4]);
 
     // Create object for the PathCalculator
     PathCalculator path(rows, cols, map, coordinates, radius, velocity);
