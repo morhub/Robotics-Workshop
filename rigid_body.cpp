@@ -37,6 +37,8 @@
 
 #include <ompl/base/SpaceInformation.h>
 #include <ompl/base/spaces/SE3StateSpace.h>
+#include <ompl/geometric/planners/prm/PRM.h>
+
 #include <ompl/geometric/planners/rrt/RRTConnect.h>
 #include <ompl/geometric/SimpleSetup.h>
 
@@ -45,6 +47,58 @@
 
 namespace ob = ompl::base;
 namespace og = ompl::geometric;
+
+// This is a problem-specific sampler that automatically generates valid
+// states; it doesn't need to call SpaceInformation::isValid. This is an
+// example of constrained sampling. If you can explicitly describe the set valid
+// states and can draw samples from it, then this is typically much more
+// efficient than generating random samples from the entire state space and
+// checking for validity.
+class MyValidStateSampler : public ob::ValidStateSampler
+{
+public:
+    MyValidStateSampler(const ob::SpaceInformation *si) : ValidStateSampler(si)
+    {
+        name_ = "my sampler";
+    }
+    // Generate a sample in the valid part of the R^3 state space
+    // Valid states satisfy the following constraints:
+    // -1<= x,y,z <=1
+    // if .25 <= z <= .5, then |x|>.8 and |y|>.8
+    bool sample(ob::State *state) override
+    {
+        double* val = static_cast<ob::RealVectorStateSpace::StateType*>(state)->values;
+        double z = rng_.uniformReal(-1,1);
+
+        if (z>.25 && z<.5)
+        {
+            double x = rng_.uniformReal(0,1.8), y = rng_.uniformReal(0,.2);
+            switch(rng_.uniformInt(0,3))
+            {
+                case 0: val[0]=x-1;  val[1]=y-1;
+                case 1: val[0]=x-.8; val[1]=y+.8;
+                case 2: val[0]=y-1;  val[1]=x-1;
+                case 3: val[0]=y+.8; val[1]=x-.8;
+            }
+        }
+        else
+        {
+            val[0] = rng_.uniformReal(-1,1);
+            val[1] = rng_.uniformReal(-1,1);
+        }
+        val[2] = z;
+        assert(si_->isValid(state));
+        return true;
+    }
+    // We don't need this in the example below.
+    bool sampleNear(ob::State* /*state*/, const ob::State* /*near*/, const double /*distance*/) override
+    {
+        throw ompl::Exception("MyValidStateSampler::sampleNear", "not implemented");
+        return false;
+    }
+protected:
+    ompl::RNG rng_;
+};
 
 bool isStateValid(const ob::State *state)
 {
@@ -58,7 +112,6 @@ bool isStateValid(const ob::State *state)
     const auto *rot = se3state->as<ob::SO3StateSpace::StateType>(1);
 
     // check validity of state defined by pos & rot
-
 
     // return a value that is always true but uses the two variables we define, so we avoid compiler warnings
     return (const void*)rot != (const void*)pos;
@@ -97,7 +150,7 @@ void plan()
     pdef->setStartAndGoalStates(start, goal);
 
     // create a planner for the defined space
-    auto planner(std::make_shared<og::RRTConnect>(si));
+    auto planner(std::make_shared<og::PRM>(si));
 
     // set the problem we are trying to solve for the planner
     planner->setProblemDefinition(pdef);
@@ -129,53 +182,6 @@ void plan()
         std::cout << "No solution found" << std::endl;
 }
 
-void planWithSimpleSetup()
-{
-    // construct the state space we are planning in
-    auto space(std::make_shared<ob::SE3StateSpace>());
-
-    // set the bounds for the R^3 part of SE(3)
-    ob::RealVectorBounds bounds(3);
-    bounds.setLow(-1);
-    bounds.setHigh(1);
-
-    space->setBounds(bounds);
-
-    // define a simple setup class
-    og::SimpleSetup ss(space);
-
-    // set state validity checking for this space
-    ss.setStateValidityChecker([](const ob::State *state) { return isStateValid(state); });
-
-    // create a random start state
-    ob::ScopedState<> start(space);
-    start.random();
-
-    // create a random goal state
-    ob::ScopedState<> goal(space);
-    goal.random();
-
-    // set the start and goal states
-    ss.setStartAndGoalStates(start, goal);
-
-    // this call is optional, but we put it in to get more output information
-    ss.setup();
-    ss.print();
-
-    // attempt to solve the problem within one second of planning time
-    ob::PlannerStatus solved = ss.solve(1.0);
-
-    if (solved)
-    {
-        std::cout << "Found solution:" << std::endl;
-        // print the path to screen
-        ss.simplifySolution();
-        ss.getSolutionPath().print(std::cout);
-    }
-    else
-        std::cout << "No solution found" << std::endl;
-}
-
 int main(int /*argc*/, char ** /*argv*/)
 {
     std::cout << "OMPL version: " << OMPL_VERSION << std::endl;
@@ -183,8 +189,6 @@ int main(int /*argc*/, char ** /*argv*/)
     plan();
 
     std::cout << std::endl << std::endl;
-
-    planWithSimpleSetup();
 
     return 0;
 }
