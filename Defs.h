@@ -11,5 +11,6 @@
 #define RETURN_CODE_ERROR (-1)
 #define RETURN_CODE_SUCCESS (0)
 #define MAIN_NUM_OF_ARGS (4)
+#define MAX_HEIGHT	(50)
 
 #endif /* DEFS_H_ */
