@@ -31,14 +31,10 @@ private:
 	int* coordinates = NULL;
 	int radius;
 	int velocity;
-//	bool isStateValid(const ob::State *state);
 public:
 	PathCalculator (int rows, int cols, float** map, int* coordinates, int radius, int velocity);
 	void PlanRoute();
 
 };
-
-
-
 
 #endif /* PATHCALCULATOR_H_ */
