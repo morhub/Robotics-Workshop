@@ -33,6 +33,7 @@ int main(int argc, char **argv)
     int radius;
     int velocity;
 
+    printf("Ignoring input params...\n");
     // Check the number of parameters
     /*
     if (argc < MAIN_NUM_OF_ARGS) {
@@ -42,35 +43,45 @@ int main(int argc, char **argv)
         return RETURN_CODE_ERROR;
     }
     */
-    map = new float*[100];
-    for(int i = 0; i < 100; ++i)
-        map[i] = new float[100];
+    map = new float*[MAP_SIZE];
+    for(int i = 0; i < MAP_SIZE; i++)
+        map[i] = new float[MAP_SIZE];
 
-    for(int i=0; i<100; ++i){      // will loop [0,param-1] or [0,param)
-        for(int j=0; j<100; ++j){  // same
-        	if (25 < i && i < 75 && 25 < j && j < 75)
+    printf("Map size is %d X %d, map overview: (point every 5 coordinates):\n", MAP_SIZE, MAP_SIZE);
+
+    for(int i=0; i < MAP_SIZE; i++){
+        for(int j=0; j < MAP_SIZE; j++){
+        	if (25 <= i && i < 75 && 25 <= j && j < 75)
         		map[i][j] = 20;
         	else
-        		map[i][j] = 0;
+                	if (15 <= i && i < 85 && 15 <= j && j < 85)
+                		map[i][j] = 15;
+                	else
+                        	if (10 <= i && i < 90 && 10 <= j && j < 90)
+                        		map[i][j] = 10;
+                        	else
+                        		map[i][j] = 0;
         }
     }
-/*
-    for(int i=0; i<100; ++i){      // will loop [0,param-1] or [0,param)
-        for(int j=0; j<100; ++j){  // same
-        	printf("%.1f ", map[i][j]);
+
+    for(int i=0; i < MAP_SIZE; i+=5){
+        for(int j=0; j < MAP_SIZE; j+=5){
+        	printf("%4.1f ", map[i][j]);
         }
         printf("\n");
     }
-*/
+
+    coordinates = new int[2];
 
     // Parse Arguments
     // Open the TIFF file using libtiff
-//    tif = TIFFOpen(argv[0].c_str(), "r");
-    coordinates = new int[2];
-//    coordinates[0] = atoi(argv[1]);
-//    coordinates[1] = atoi(argv[2]);
-//    radius = atoi(argv[3]);
-//    velocity = atoi(argv[4]);
+    /*
+    tif = TIFFOpen(argv[0].c_str(), "r");
+    coordinates[0] = atoi(argv[1]);
+    coordinates[1] = atoi(argv[2]);
+    radius = atoi(argv[3]);
+    velocity = atoi(argv[4]);
+    */
     coordinates[0] = 3;
     coordinates[1] = 3;
     radius = 3;
@@ -81,7 +92,7 @@ int main(int argc, char **argv)
 
     path.PlanRoute();
 
-    for(int i = 0; i < 100; ++i) {
+    for(int i = 0; i < MAP_SIZE; ++i) {
         delete [] map[i];
     }
     delete [] map;

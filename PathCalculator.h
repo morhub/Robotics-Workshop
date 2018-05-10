@@ -31,6 +31,16 @@ private:
 	int* coordinates = NULL;
 	int radius;
 	int velocity;
+	class myMotionValidator : public ob::MotionValidator
+	{
+	public:
+		myMotionValidator(const ob::SpaceInformationPtr &si);
+		bool checkMotion(const ob::State *s1, const ob::State *s2) const;
+		bool checkMotion(const ob::State *s1, const ob::State *s2,  std::pair<ob::State *, double> &lastValid) const;
+	};
+	static ob::ValidStateSamplerPtr allocMyValidStateSampler(const ob::SpaceInformation *si);
+	static bool isStateValid(const ob::State *state);
+
 public:
 	PathCalculator (int rows, int cols, float** map, int* coordinates, int radius, int velocity);
 	void PlanRoute();
