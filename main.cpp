@@ -2,7 +2,7 @@
  * main.cpp
  *
  *  Created on: May 9, 2018
- *      Author: Dana
+ *     Author: Dana
  */
 /*********** Includes ***********/
 #include <iostream>
