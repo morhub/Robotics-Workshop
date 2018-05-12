@@ -14,5 +14,8 @@
 #define MAX_HEIGHT	(50)
 #define	MAP_SIZE	(100)
 #define MAX_DISTANCE_FOR_STEP (10)
+#define DOTS_FILE_NAME "dots.txt"
+//#define MAP_TIF "N46E010.tif"
+#define MAP_TIF "sample.tif"
 
 #endif /* DEFS_H_ */

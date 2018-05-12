@@ -1,3 +1,4 @@
+
 /*
  * PathCalculator.cpp
  *
@@ -8,6 +9,11 @@
 #include <cstdio>
 #include "PathCalculator.h"
 #include "Defs.h"
+#include <stdio.h>
+#include <fstream>
+#include <string>
+
+using namespace std;
 
 float** global_map;
 
@@ -183,12 +189,75 @@ void PathCalculator::PlanRoute()
     {
         // get the goal representation from the problem definition (not the same as the goal state)
         // and inquire about the found path
-        ob::PathPtr path = pdef->getSolutionPath();
+        thePath = pdef->getSolutionPath();
         std::cout << "Found solution:" << std::endl;
 
         // print the path to screen
-        path->print(std::cout);
+        std::cout << "path- begin" << std::endl;
+        thePath->print(std::cout);
+        
+        std::ofstream fout;
+        fout.open(DOTS_FILE_NAME, std::ios::out | std::ios::trunc);
+        if(!fout)
+			std::cout << "Error opening file" << std::endl;
+        thePath->print(fout);
+        fout.close();
+        std::cout << "path- end" << std::endl;
     }
     else
         std::cout << "No solution found" << std::endl;
+}
+
+
+void PathCalculator::Show()
+{
+	float x1, y1, z1, x2,y2,z2;
+    int numOfPoints;
+    float colorFactor;
+    
+    //reading from the "path->print()" file
+    FILE * readFile;
+    readFile = fopen(DOTS_FILE_NAME, "r");
+	fscanf(readFile, "Geometric path with %d states\n", &numOfPoints);
+   
+    //creating a Mat to display
+	cv::Mat image;
+   
+   try{
+	image = cv::imread(MAP_TIF , CV_LOAD_IMAGE_ANYDEPTH | CV_LOAD_IMAGE_COLOR);
+}catch(exception& e){
+	cout << e.what() << endl;
+	return;}
+	if(! image.data ) 
+	{
+      std::cout <<  "Could not open or find the image" << std::endl ;
+      return;
+    }
+ 
+	cv::namedWindow( "Our Plane Path", cv::WINDOW_AUTOSIZE );
+	
+	
+	fscanf(readFile,  "RealVectorState [%f %f %f]\n", &x1, &y1, &z1);
+	fscanf(readFile,  "RealVectorState [%f %f %f]\n", &x2, &y2, &z2);
+	cv::line(image, cv::Point(x1,y1), cv::Point(x2,y2), cv::Scalar(255,255,0), 1);
+	//circle(image, Point(x1,y1), 3, Scalar(255,0,0), FILLED);
+	for(int i=3; i<=numOfPoints; i++)
+	{
+		//Old last-point is now first-point
+		x1=x2;
+		y1=y2;
+		z1=z2;
+			
+		fscanf(readFile,  "RealVectorState [%f %f %f]\n", &x2, &y2, &z2);
+			
+		cv::line(image, cv::Point(x1,y1), cv::Point(x2,y2), cv::Scalar(255,255,0), 1);
+		//cv::circle(image, cv::Point(x2,y2), 3, cv::Scalar(255,0,0), cv::FILLED);
+	}
+	
+	
+	fclose(readFile);
+	
+	cv::imshow( "Our Plane Path", image );
+	cv::waitKey(0);
+	
 }

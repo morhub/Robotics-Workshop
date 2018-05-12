@@ -9,6 +9,7 @@
 #include <string>
 #include "PathCalculator.h"
 #include "Defs.h"
+#include <fstream>
 /*
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgcodecs.hpp>
@@ -91,6 +92,9 @@ int main(int argc, char **argv)
     PathCalculator path(rows, cols, map, coordinates, radius, velocity);
 
     path.PlanRoute();
+    
+    path.Show();
+    
 
     for(int i = 0; i < MAP_SIZE; ++i) {
         delete [] map[i];
